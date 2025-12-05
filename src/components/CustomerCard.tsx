@@ -2,75 +2,152 @@ import { Customer } from '@/data/mock-customers';
 
 export interface CustomerCardProps {
   customer: Customer;
-  className?: string;
+  onClick?: (customer: Customer) => void;
 }
 
-export function CustomerCard({ customer, className = '' }: CustomerCardProps) {
-  const { name, company, healthScore, domains } = customer;
+/**
+ * Get health score color classes based on score thresholds
+ * Red: 0-30 (critical), Yellow: 31-70 (warning), Green: 71-100 (healthy)
+ */
+function getHealthScoreColors(score: number): {
+  text: string;
+  bg: string;
+  border: string;
+} {
+  if (score <= 30) {
+    return {
+      text: 'text-red-600',
+      bg: 'bg-red-100',
+      border: 'border-red-300',
+    };
+  } else if (score <= 70) {
+    return {
+      text: 'text-yellow-600',
+      bg: 'bg-yellow-100',
+      border: 'border-yellow-300',
+    };
+  } else {
+    return {
+      text: 'text-green-600',
+      bg: 'bg-green-100',
+      border: 'border-green-300',
+    };
+  }
+}
 
-  // Determine health status color based on score thresholds
-  const getHealthColorClasses = (score: number): string => {
-    if (score >= 0 && score <= 30) {
-      return 'bg-red-100 text-red-800 border-red-300';
-    } else if (score >= 31 && score <= 70) {
-      return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-    } else {
-      return 'bg-green-100 text-green-800 border-green-300';
+/**
+ * CustomerCard Component
+ *
+ * Displays individual customer information including:
+ * - Customer name, email, and company
+ * - Color-coded health score (0-100)
+ * - Domain count and list
+ *
+ * Responsive design with mobile-first approach
+ * Clickable with hover states for interaction
+ */
+export function CustomerCard({ customer, onClick }: CustomerCardProps) {
+  const healthColors = getHealthScoreColors(customer.healthScore);
+  const domainCount = customer.domains?.length || 0;
+
+  const handleClick = () => {
+    if (onClick) {
+      onClick(customer);
     }
   };
 
-  const healthColorClasses = getHealthColorClasses(healthScore);
-  const hasDomains = domains && domains.length > 0;
-  const hasMultipleDomains = domains && domains.length > 1;
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (onClick && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      onClick(customer);
+    }
+  };
 
   return (
     <div
-      className={`border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow bg-white ${className}`}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      className={`
+        relative
+        border border-gray-200 rounded-lg
+        bg-white
+        p-4
+        shadow-sm
+        transition-all duration-200
+        min-h-[120px]
+        max-w-[400px]
+        ${onClick ? 'cursor-pointer hover:shadow-md hover:border-gray-300 hover:-translate-y-0.5' : ''}
+      `}
     >
-      {/* Header with name and health score */}
+      {/* Header: Name and Health Score */}
       <div className="flex items-start justify-between gap-3 mb-2">
         <div className="flex-1 min-w-0">
           <h3 className="text-lg font-semibold text-gray-900 truncate">
-            {name}
+            {customer.name}
           </h3>
           <p className="text-sm text-gray-600 truncate">
-            {company}
+            {customer.company}
           </p>
         </div>
 
-        {/* Health score indicator */}
+        {/* Health Score Badge */}
         <div
-          className={`flex-shrink-0 px-3 py-1 rounded-full border font-semibold text-sm ${healthColorClasses}`}
+          className={`
+            flex-shrink-0
+            px-3 py-1
+            rounded-full
+            border
+            font-semibold
+            text-sm
+            ${healthColors.bg}
+            ${healthColors.text}
+            ${healthColors.border}
+          `}
         >
-          {healthScore}
+          {customer.healthScore}
         </div>
       </div>
 
-      {/* Domain information */}
-      {hasDomains && (
+      {/* Email */}
+      {customer.email && (
+        <p className="text-sm text-gray-500 truncate mb-3">
+          {customer.email}
+        </p>
+      )}
+
+      {/* Domains Section */}
+      {domainCount > 0 && (
         <div className="mt-3 pt-3 border-t border-gray-100">
-          {hasMultipleDomains ? (
-            <div className="relative group inline-block">
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 cursor-default">
-                {domains.length} domains
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xs font-medium text-gray-700">
+              Domains ({domainCount})
+            </span>
+          </div>
+
+          {/* Domain List - Responsive */}
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            {customer.domains?.map((domain, index) => (
+              <span
+                key={`${domain}-${index}`}
+                className="
+                  inline-block
+                  px-2 py-0.5
+                  text-xs
+                  bg-gray-100
+                  text-gray-700
+                  rounded
+                  truncate
+                  max-w-full
+                  sm:max-w-[200px]
+                "
+                title={domain}
+              >
+                {domain}
               </span>
-              {/* Tooltip with domain list */}
-              <div className="absolute left-0 top-full mt-2 w-64 p-3 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
-                <ul className="space-y-1 text-sm text-gray-700">
-                  {domains.map((domain, index) => (
-                    <li key={index} className="flex items-start">
-                      <span className="mr-2">•</span>
-                      <span className="break-all">{domain}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          ) : (
-            <p className="text-sm text-gray-700 truncate">
-              {domains[0]}
-            </p>
-          )}
+            ))}
+          </div>
         </div>
       )}
     </div>
