@@ -11,13 +11,14 @@ const CustomerCardDemo = () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const mockCustomers = require('../data/mock-customers')?.mockCustomers;
     
-    if (mockCustomers?.[0]) {
+    if (mockCustomers && mockCustomers.length > 0) {
       return (
         <div className="space-y-4">
           <p className="text-green-600 text-sm font-medium">✅ CustomerCard implemented!</p>
-          <div className="flex flex-wrap gap-4">
-            <CustomerCard customer={mockCustomers[0]} />
-            <CustomerCard customer={mockCustomers[1]} />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {mockCustomers.map((customer: any) => (
+              <CustomerCard key={customer.id} customer={customer} />
+            ))}
           </div>
         </div>
       );
