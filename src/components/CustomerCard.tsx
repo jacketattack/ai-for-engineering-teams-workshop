@@ -2,7 +2,7 @@ import { Customer } from '@/data/mock-customers';
 
 export interface CustomerCardProps {
   customer: Customer;
-  onClick?: (customer: Customer) => void;
+  className?: string;
 }
 
 /**
@@ -39,46 +39,28 @@ function getHealthScoreColors(score: number): {
  * CustomerCard Component
  *
  * Displays individual customer information including:
- * - Customer name, email, and company
+ * - Customer name and company
  * - Color-coded health score (0-100)
- * - Domain count and list
+ * - Domain information with hover tooltip for multiple domains
  *
  * Responsive design with mobile-first approach
- * Clickable with hover states for interaction
+ * Read-only presentation component
  */
-export function CustomerCard({ customer, onClick }: CustomerCardProps) {
+export function CustomerCard({ customer, className }: CustomerCardProps) {
   const healthColors = getHealthScoreColors(customer.healthScore);
   const domainCount = customer.domains?.length || 0;
 
-  const handleClick = () => {
-    if (onClick) {
-      onClick(customer);
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (onClick && (e.key === 'Enter' || e.key === ' ')) {
-      e.preventDefault();
-      onClick(customer);
-    }
-  };
-
   return (
     <div
-      onClick={handleClick}
-      onKeyDown={handleKeyDown}
-      role={onClick ? 'button' : undefined}
-      tabIndex={onClick ? 0 : undefined}
       className={`
         relative
         border border-gray-200 rounded-lg
         bg-white
         p-4
         shadow-sm
-        transition-all duration-200
         min-h-[120px]
         max-w-[400px]
-        ${onClick ? 'cursor-pointer hover:shadow-md hover:border-gray-300 hover:-translate-y-0.5' : ''}
+        ${className || ''}
       `}
     >
       {/* Header: Name and Health Score */}
@@ -110,43 +92,40 @@ export function CustomerCard({ customer, onClick }: CustomerCardProps) {
         </div>
       </div>
 
-      {/* Email */}
-      {customer.email && (
-        <p className="text-sm text-gray-500 truncate mb-3">
-          {customer.email}
-        </p>
-      )}
-
       {/* Domains Section */}
       {domainCount > 0 && (
         <div className="mt-3 pt-3 border-t border-gray-100">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2">
             <span className="text-xs font-medium text-gray-700">
               Domains ({domainCount})
             </span>
           </div>
 
-          {/* Domain List - Responsive */}
+          {/* Domain Display */}
           <div className="flex flex-wrap gap-1.5 mt-2">
-            {customer.domains?.map((domain, index) => (
-              <span
-                key={`${domain}-${index}`}
-                className="
-                  inline-block
-                  px-2 py-0.5
-                  text-xs
-                  bg-gray-100
-                  text-gray-700
-                  rounded
-                  truncate
-                  max-w-full
-                  sm:max-w-[200px]
-                "
-                title={domain}
-              >
-                {domain}
+            {domainCount === 1 ? (
+              /* Single domain - show as simple tag */
+              <span className="inline-block px-2 py-0.5 text-xs bg-gray-100 text-gray-700 rounded truncate max-w-full">
+                {customer.domains![0]}
               </span>
-            ))}
+            ) : (
+              /* Multiple domains - show light-blue hover tooltip tag */
+              <div className="relative group inline-block">
+                <span className="inline-block px-2 py-0.5 text-xs bg-blue-100 text-blue-700 rounded cursor-default">
+                  {customer.domains![0]} +{domainCount - 1} more
+                </span>
+                {/* Hover tooltip with bulleted list */}
+                <div className="absolute left-0 top-full mt-1 hidden group-hover:block bg-white border border-gray-200 rounded-lg shadow-lg p-3 z-10 min-w-[200px]">
+                  <ul className="list-disc list-inside text-xs text-gray-700 space-y-1">
+                    {customer.domains!.map((domain, index) => (
+                      <li key={`${domain}-${index}`} className="truncate">
+                        {domain}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
