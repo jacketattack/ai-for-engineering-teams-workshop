@@ -30,6 +30,7 @@
 - Adequate spacing and padding for readability
 - Domain information should be clearly associated with the customer
 - Display first domain with option to show additional domain count
+- If there are multiple domains, instead it should show a light-blue tag-like component that on hover shows a bulleted-list of the domains for user to see
 
 #### Data Requirements
 - Import `Customer` interface from `@/data/mock-customers`

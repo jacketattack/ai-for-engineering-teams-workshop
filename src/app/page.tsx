@@ -1,15 +1,17 @@
 'use client';
 
 import { Suspense } from 'react';
+import { CustomerCard } from '../components/CustomerCard';
 
 // Dynamic component imports with error boundaries
 const CustomerCardDemo = () => {
   try {
     // Try to import CustomerCard - this will work after Exercise 3
-    const CustomerCard = require('../components/CustomerCard')?.default;
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const mockCustomers = require('../data/mock-customers')?.mockCustomers;
     
-    if (CustomerCard && mockCustomers?.[0]) {
+    if (mockCustomers?.[0]) {
       return (
         <div className="space-y-4">
           <p className="text-green-600 text-sm font-medium">✅ CustomerCard implemented!</p>
